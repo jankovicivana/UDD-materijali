@@ -1,5 +1,6 @@
 package com.example.ddmdemo.controller;
 
+import com.example.ddmdemo.dto.AddressDTO;
 import com.example.ddmdemo.dto.DocumentResultDTO;
 import com.example.ddmdemo.dto.SearchQueryDTO;
 import com.example.ddmdemo.indexmodel.DataIndex;
@@ -22,5 +23,10 @@ public class SearchController {
     @PostMapping("/advanced")
     public List<DocumentResultDTO> advancedSearch(@RequestBody SearchQueryDTO advancedSearchQuery) {
         return searchService.advancedSearch(advancedSearchQuery.getTokens());
+    }
+
+    @PostMapping("/address")
+    public List<DocumentResultDTO> addressSearch(@RequestBody AddressDTO dto) {
+        return searchService.addressSearch(dto);
     }
 }

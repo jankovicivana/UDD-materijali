@@ -2,6 +2,7 @@ package com.example.ddmdemo.service.impl;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import com.example.ddmdemo.dto.AddressDTO;
 import com.example.ddmdemo.dto.DocumentResultDTO;
 import com.example.ddmdemo.indexmodel.DataIndex;
 import com.example.ddmdemo.service.interfaces.SearchService;
@@ -15,7 +16,11 @@ import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
+import org.springframework.data.elasticsearch.core.query.HighlightQuery;
+import org.springframework.data.elasticsearch.core.query.highlight.Highlight;
+import org.springframework.data.elasticsearch.core.query.highlight.HighlightField;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,11 +53,34 @@ public class SearchServiceImpl implements SearchService {
         Query builder = buildAdvancedSearchQuery(postfix);
         var searchQuery = new NativeQueryBuilder()
                 .withQuery(builder)
+                .withHighlightQuery(new HighlightQuery(
+                        new Highlight(List.of(
+                                new HighlightField("contract"),
+                                new HighlightField("legislation")
+                        )), DataIndex.class))
                 .build();
-
 
         return runQuery(searchQuery);
 
+    }
+
+    @Override
+    public List<DocumentResultDTO> addressSearch(AddressDTO dto){
+        GeoPoint point = IndexingServiceImpl.transformAddress(dto.getAddress());
+
+        Query query = BoolQuery.of(q -> q.must(mb -> mb.bool(b -> {
+            b.filter(g -> g.geoDistance(gg -> gg.field("geopoint").distance(dto.getDistance()+"km")
+                    .location(geoLocation -> geoLocation
+                            .latlon(latLonGeoLocation -> latLonGeoLocation
+                                    .lon(point.getLon()).lat(point.getLat())))));
+            return b;
+        })))._toQuery();
+
+        var searchQuery = new NativeQueryBuilder()
+                .withQuery(query)
+                .build();
+
+        return runQuery(searchQuery);
     }
 
 
@@ -117,7 +145,7 @@ public class SearchServiceImpl implements SearchService {
     }
 
     private static boolean hasHigherPrecedence(String op1, String op2) {
-        return getPrecedence(op1) > getPrecedence(op2);
+        return getPrecedence(op1) >= getPrecedence(op2);
     }
 
     private static int getPrecedence(String operator) {
@@ -143,6 +171,7 @@ public class SearchServiceImpl implements SearchService {
 
     public static void parsePostfixExpression(List<String> postfixTokens, BoolQuery.Builder b) {
         var operandStack = new Stack<String>();
+//        var builders = new Stack<Query>();
         for (var token : postfixTokens) {
             if (isOperator(token)) {
                 var value = operandStack.pop();
@@ -155,10 +184,29 @@ public class SearchServiceImpl implements SearchService {
                     case "and":
                         var value1 = operandStack.pop();
                         var field1 = operandStack.pop();
+//                        Query qq = BoolQuery.of(q -> q.must(mb -> mb.bool(bb -> {
+//                            parsePostfixExpression(postfixTokens, bb);
+//                            return bb;
+//                        })))._toQuery();
+//                        b.must(qq);
+
                         b.must(q -> q.bool(mb ->
                                 {
-                                    mb.must(sb -> sb.match(m -> m.field(field).fuzziness(Fuzziness.ONE.asString()).query(value)));
-                                    mb.must(sb -> sb.match(m -> m.field(field1).fuzziness(Fuzziness.ONE.asString()).query(value1)));
+                                    mb.must(sb -> {
+                                        if (!value.contains(" "))
+                                            sb.match(m -> m.field(field).fuzziness(Fuzziness.ONE.asString()).query(value));
+                                        else
+                                            sb.matchPhrase(m -> m.field(field).query(value));
+                                        return sb;
+                                    });
+                                    mb.must(sb ->
+                                    {
+                                        if (!value.contains(" "))
+                                            sb.match(m -> m.field(field1).fuzziness(Fuzziness.ONE.asString()).query(value1));
+                                        else
+                                            sb.matchPhrase(m -> m.field(field1).query(value1));
+                                        return sb;
+                                    });
                                     return mb;
                                 }
                         ));
@@ -177,6 +225,8 @@ public class SearchServiceImpl implements SearchService {
                 operandStack.push(token);
             }
         }
+//
+//        b.must(builders.pop());
     }
 
 

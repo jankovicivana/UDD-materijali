@@ -17,12 +17,15 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.tika.metadata.Message;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -42,6 +45,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     private final LanguageDetector languageDetector;
 
+    private static final Logger logger = Logger.getLogger(IndexingServiceImpl.class.getName());
 
     @Override
     @Transactional
@@ -80,6 +84,10 @@ public class IndexingServiceImpl implements IndexingService {
 
         newIndex.setDatabaseId(savedEntity.getId());
         dataIndexRepository.save(newIndex);
+
+        logger.info(MessageFormat.format(
+                "STATISTIC-LOG government_name={0};government_level={1};employee={2};city={3}",
+                newIndex.getGovernmentName(), newIndex.getGovernmentLevel(), newIndex.getEmployeeName() + " " + newIndex.getEmployeeSurname(), newIndex.getAddress().split(",")[2].strip()));
 
         return new DocumentFileResponseDTO(contractServerFilename, legislationServerFilename);
     }
@@ -125,7 +133,7 @@ public class IndexingServiceImpl implements IndexingService {
         newIndex.setAddress(address);
     }
 
-    private GeoPoint transformAddress(String address) {
+    public static GeoPoint transformAddress(String address) {
         try {
             String apiUrl = "https://nominatim.openstreetmap.org/search";
             String format = "json";
