@@ -23,21 +23,13 @@ public class DocumentTable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "contract_server_filename")
-    private String contractServerFilename;
+    @Column(name = "server_filename")
+    private String serverFilename;
 
-    @Column(name = "legislation_server_filename")
-    private String legislationServerFilename;
+    @Column(name = "title")
+    private String title;
 
-    @Column(name = "contract_title")
-    private String contractTitle;
+    @Column(name = "content", length = 2048)
+    private String content;
 
-    @Column(name = "legislation_title")
-    private String legislationTitle;
-
-    @Column(name = "contract", length = 2048)
-    private String contract;
-
-    @Column(name = "legislation", length = 2048)
-    private String legislation;
 }

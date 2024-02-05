@@ -10,13 +10,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DocumentResultDTO {
-    private String contractFilename;
-    private String legislationFilename;
+    private String id;
+    private String title;
+    private String filename;
     private String governmentName;
     private String governmentLevel;
     private String employeeName;
     private String employeeSurname;
     private String address;
-    private String contractHighlights;
-    private String legislationHighlights;
+    private String highlights;
 }

@@ -25,7 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.tika.metadata.Message;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -53,43 +52,33 @@ public class IndexingServiceImpl implements IndexingService {
         var newEntity = new DocumentTable();
         var newIndex = new DataIndex();
 
-        var contractTitle = Objects.requireNonNull(dto.getContract().getOriginalFilename()).split("\\.")[0];
-        newIndex.setContractTitle(contractTitle);
-        newEntity.setContractTitle(contractTitle);
+        var title = Objects.requireNonNull(dto.getFile().getOriginalFilename()).split("\\.")[0];
+        newIndex.setTitle(title);
+        newEntity.setTitle(title);
 
-        var legislationTitle = Objects.requireNonNull(dto.getLegislation().getOriginalFilename()).split("\\.")[0];
-        newIndex.setLegislationTitle(legislationTitle);
-        newEntity.setLegislationTitle(legislationTitle);
+        var content = extractDocumentContent(dto.getFile());
+        System.out.println(content);
+        newIndex.setContent(content);
+        newEntity.setContent(content);
 
-        var contractContent = extractDocumentContent(dto.getContract());
-        System.out.println(contractContent);
-        newIndex.setContract(contractContent);
-        newEntity.setContract(contractContent);
+        if(dto.getIsContract())
+            extractData(content, newIndex);
 
-        extractData(contractContent, newIndex);
-
-        var legislationContent = extractDocumentContent(dto.getLegislation());
-        newIndex.setLegislation(legislationContent);
-        newEntity.setLegislation(legislationContent);
-
-        var contractServerFilename = fileService.store(dto.getContract(), UUID.randomUUID().toString());
-        newIndex.setContractServerFilename(contractServerFilename);
-        newEntity.setContractServerFilename(contractServerFilename);
-
-        var legislationServerFilename = fileService.store(dto.getLegislation(), UUID.randomUUID().toString());
-        newIndex.setLegislationServerFilename(legislationServerFilename);
-        newEntity.setLegislationServerFilename(legislationServerFilename);
+        var serverFilename = fileService.store(dto.getFile(), UUID.randomUUID().toString());
+        newIndex.setServerFilename(serverFilename);
+        newEntity.setServerFilename(serverFilename);
 
         var savedEntity = dataRepository.save(newEntity);
 
         newIndex.setDatabaseId(savedEntity.getId());
         dataIndexRepository.save(newIndex);
 
-        logger.info(MessageFormat.format(
-                "STATISTIC-LOG government_name={0};government_level={1};employee={2};city={3}",
-                newIndex.getGovernmentName(), newIndex.getGovernmentLevel(), newIndex.getEmployeeName() + " " + newIndex.getEmployeeSurname(), newIndex.getAddress().split(",")[2].strip()));
+        if(dto.getIsContract())
+            logger.info(MessageFormat.format(
+                    "STATISTIC-LOG government_name={0};government_level={1};employee={2};city={3}",
+                    newIndex.getGovernmentName(), newIndex.getGovernmentLevel(), newIndex.getEmployeeName() + " " + newIndex.getEmployeeSurname(), newIndex.getAddress().split(",")[2].strip()));
 
-        return new DocumentFileResponseDTO(contractServerFilename, legislationServerFilename);
+        return new DocumentFileResponseDTO(serverFilename);
     }
 
     private void extractData(String contractContent, DataIndex newIndex) {

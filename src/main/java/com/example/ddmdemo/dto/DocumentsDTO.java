@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class DocumentsDTO {
 
-    private MultipartFile contract;
-    private MultipartFile legislation;
+    private MultipartFile file;
+    private Boolean isContract;
 
 }

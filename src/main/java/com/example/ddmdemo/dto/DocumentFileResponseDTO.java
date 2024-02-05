@@ -6,6 +6,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class DocumentFileResponseDTO {
-    private String contractServerFilename;
-    private String legislationServerFilename;
+    private String serverFilename;
 }

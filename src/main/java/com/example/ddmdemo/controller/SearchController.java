@@ -3,11 +3,8 @@ package com.example.ddmdemo.controller;
 import com.example.ddmdemo.dto.AddressDTO;
 import com.example.ddmdemo.dto.DocumentResultDTO;
 import com.example.ddmdemo.dto.SearchQueryDTO;
-import com.example.ddmdemo.indexmodel.DataIndex;
 import com.example.ddmdemo.service.interfaces.SearchService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

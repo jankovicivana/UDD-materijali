@@ -22,23 +22,14 @@ public class DataIndex {
     @Field(type = FieldType.Integer, store = true, name = "database_id")
     private Integer databaseId;
 
-    @Field(type = FieldType.Text, store = true, name = "contract_title")
-    private String contractTitle;
+    @Field(type = FieldType.Text, store = true, name = "title")
+    private String title;
 
-    @Field(type = FieldType.Text, store = true, name = "legislation_title")
-    private String legislationTitle;
+    @Field(type = FieldType.Text, store = true, name = "server_filename")
+    private String serverFilename;
 
-    @Field(type = FieldType.Text, store = true, name = "contract_server_filename")
-    private String contractServerFilename;
-
-    @Field(type = FieldType.Text, store = true, name = "legislation_server_filename")
-    private String legislationServerFilename;
-
-    @Field(type = FieldType.Text, store = true, name = "contract", analyzer = "serbian_simple", searchAnalyzer = "serbian_simple")
-    private String contract;
-
-    @Field(type = FieldType.Text, store = true, name = "legislation", analyzer = "serbian_simple", searchAnalyzer = "serbian_simple")
-    private String legislation;
+    @Field(type = FieldType.Text, store = true, name = "content", analyzer = "serbian_simple", searchAnalyzer = "serbian_simple")
+    private String content;
 
     @Field(type = FieldType.Text, store = true, name = "government_name")
     private String governmentName;

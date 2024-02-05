@@ -32,7 +32,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public List<DocumentResultDTO> simpleSearch(List<String> tokens) {
         var searchQueryBuilder = new NativeQueryBuilder().withQuery(buildSimpleSearchQuery(tokens));
-        return runQuery(searchQueryBuilder.build());
+        return runQuery(searchQueryBuilder.build(), "content");
     }
 
     private Query buildSimpleSearchQuery(List<String> tokens) {
@@ -55,12 +55,12 @@ public class SearchServiceImpl implements SearchService {
                 .withQuery(builder)
                 .withHighlightQuery(new HighlightQuery(
                         new Highlight(List.of(
-                                new HighlightField("contract"),
-                                new HighlightField("legislation")
+                                new HighlightField("content"),
+                                new HighlightField("address")
                         )), DataIndex.class))
                 .build();
 
-        return runQuery(searchQuery);
+        return runQuery(searchQuery, "content");
 
     }
 
@@ -78,39 +78,40 @@ public class SearchServiceImpl implements SearchService {
 
         var searchQuery = new NativeQueryBuilder()
                 .withQuery(query)
+                .withHighlightQuery(new HighlightQuery(
+                        new Highlight(List.of(
+                                new HighlightField("address")
+                        )), DataIndex.class))
                 .build();
 
-        return runQuery(searchQuery);
+        return runQuery(searchQuery, "address");
     }
 
 
-    private List<DocumentResultDTO> runQuery(NativeQuery searchQuery) {
+    private List<DocumentResultDTO> runQuery(NativeQuery searchQuery, String highlightField) {
         SearchHits<DataIndex> hits = elasticsearchTemplate.search(searchQuery, DataIndex.class,
             IndexCoordinates.of("document_index"));
         List<DocumentResultDTO> results = new ArrayList<>();
         for (SearchHit<DataIndex> hit : hits) {
             var data = hit.getContent();
-            var contractHighlight = hit.getHighlightFields().get("contract");
-            String contractHighlights = "";
-            if (contractHighlight != null) {
-                contractHighlights = String.join("...", contractHighlight);
+
+            var highlight = hit.getHighlightFields().get(highlightField);
+            String h = "";
+            if (highlight != null) {
+                h = String.join("  ...  ", highlight);
+                h = h.replace("<em>", "<em><b>").replace("</em>", "</b></em>");
             }
 
-            var legislationHighlight = hit.getHighlightFields().get("legislation");
-            String legislationHighlights = "";
-            if (legislationHighlight != null) {
-                legislationHighlights = String.join("...", legislationHighlight);
-            }
-
-            results.add(new DocumentResultDTO(data.getContractServerFilename(),
-                    data.getLegislationServerFilename(),
+            results.add(new DocumentResultDTO(
+                    data.getId(),
+                    data.getTitle(),
+                    data.getServerFilename(),
                     data.getGovernmentName(),
                     data.getGovernmentLevel(),
                     data.getEmployeeName(),
                     data.getEmployeeSurname(),
                     data.getAddress(),
-                    contractHighlights,
-                    legislationHighlights));
+                    h));
         }
 
         return results;
