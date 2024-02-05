@@ -1,6 +1,17 @@
 package com.example.ddmdemo.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.List;
 
-public record SearchQueryDTO(List<String> keywords) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class SearchQueryDTO {
+
+    private List<String> tokens;
 }
