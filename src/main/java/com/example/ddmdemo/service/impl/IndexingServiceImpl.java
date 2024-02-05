@@ -82,7 +82,7 @@ public class IndexingServiceImpl implements IndexingService {
     }
 
     private void extractData(String contractContent, DataIndex newIndex) {
-        String governmentNameRegex = "Uprava za (\\w+)";
+        String governmentNameRegex = "Uprava za ([^\\n]+)";
         String governmentLevelRegex = "nivo uprave: (\\w+)";
         String addressRegex = "(\\w+(?:\\s+\\w+)*)\\s*,\\s*(\\d+)\\s*,\\s*(\\p{L}+\\s*\\p{L}*)\\s*,\\s*u daljem tekstu klijent";
         String employeeNameSurnameRegex = "\\s+(\\p{L}+\\s+\\p{L}+)\\s*_{2,}";
