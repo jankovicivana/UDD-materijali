@@ -1,32 +1,29 @@
 package com.example.ddmdemo.controller;
 
+import com.example.ddmdemo.dto.AddressDTO;
+import com.example.ddmdemo.dto.DocumentResultDTO;
 import com.example.ddmdemo.dto.SearchQueryDTO;
-import com.example.ddmdemo.indexmodel.DummyIndex;
 import com.example.ddmdemo.service.interfaces.SearchService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class SearchController {
 
     private final SearchService searchService;
 
-    @PostMapping("/simple")
-    public Page<DummyIndex> simpleSearch(@RequestBody SearchQueryDTO simpleSearchQuery,
-                                         Pageable pageable) {
-        return searchService.simpleSearch(simpleSearchQuery.keywords(), pageable);
+    @PostMapping("/advanced")
+    public List<DocumentResultDTO> advancedSearch(@RequestBody SearchQueryDTO advancedSearchQuery) {
+        return searchService.advancedSearch(advancedSearchQuery.getTokens());
     }
 
-    @PostMapping("/advanced")
-    public Page<DummyIndex> advancedSearch(@RequestBody SearchQueryDTO advancedSearchQuery,
-                                           Pageable pageable) {
-        return searchService.advancedSearch(advancedSearchQuery.keywords(), pageable);
+    @PostMapping("/address")
+    public List<DocumentResultDTO> addressSearch(@RequestBody AddressDTO dto) {
+        return searchService.addressSearch(dto);
     }
 }

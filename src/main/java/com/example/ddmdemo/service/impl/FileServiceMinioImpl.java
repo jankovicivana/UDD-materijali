@@ -46,6 +46,7 @@ public class FileServiceMinioImpl implements FileService {
                 .build();
             minioClient.putObject(args);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new StorageException("Error while storing file in Minio.");
         }
 

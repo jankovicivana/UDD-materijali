@@ -16,15 +16,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "dummy_table")
-public class DummyTable {
+@Table(name = "document_table")
+public class DocumentTable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "mime_type")
-    private String mimeType;
 
     @Column(name = "server_filename")
     private String serverFilename;
@@ -32,6 +29,7 @@ public class DummyTable {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 2048)
     private String content;
+
 }

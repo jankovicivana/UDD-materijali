@@ -5,13 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SearchQueryDTO {
+public class AddressDTO {
 
-    private List<String> tokens;
+    private String address;
+
+    private Double distance;
 }
